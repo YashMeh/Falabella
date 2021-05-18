@@ -24,6 +24,12 @@ func NewElasticClient(url string) (ElasticServer, error) {
 	if err != nil {
 		return nil, err
 	}
+	_, err2 := ElasticClient.Info()
+
+	// Deserialize the response into a map.
+	if err2 != nil {
+		return nil, err2
+	}
 	return &elasticServer{Client: ElasticClient}, nil
 }
 
