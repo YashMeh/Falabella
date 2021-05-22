@@ -16,6 +16,12 @@ func main() {
 	aT := tikaApi.NewTikaClient("http://localhost:9998")
 
 	sI := service.NewIndexService(aE, aT)
-	sI.IndexDoc("./assets")
+	sI.IndexDoc("./assets/")
+
+	// select {
+	// case j := <-service.Flag:
+	// 	fmt.Printf("All Done %t ", j)
+
+	// }
 
 }

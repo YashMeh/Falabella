@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	wg sync.WaitGroup
+	wg   sync.WaitGroup
+	Flag chan bool
 )
 
 type IndexService interface {
@@ -33,7 +34,7 @@ func NewIndexService(elasticC elasticApi.ElasticServer, tikaC tikaApi.TikaServer
 	return &indexService{EClient: elasticC.Get(), TClient: tikaC.Get()}
 }
 
-func ReadData(s *indexService, fileDir string, ch chan<- *elasticApi.Document) {
+func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *elasticApi.Document) {
 	//Open the file
 	f, err := os.Open(fileDir)
 	if err != nil {
@@ -45,26 +46,32 @@ func ReadData(s *indexService, fileDir string, ch chan<- *elasticApi.Document) {
 	if err != nil {
 		fmt.Println("[ERROR] Reading body")
 	}
-	docContent, err := s.TClient.Detect(c, f)
-	if err != nil {
-		fmt.Println("[ERROR] Reading MIMETYPE")
-	}
-	docMeta, err := s.TClient.Meta(c, f)
-	if err != nil {
-		fmt.Println("[ERROR] Reading Meta-data")
-	}
+	// docContent, err := s.TClient.Detect(c, f)
+	// if err != nil {
+	// 	fmt.Println("[ERROR] Reading MIMETYPE")
+	// }
+	// docMeta, err := s.TClient.Meta(c, f)
+	// if err != nil {
+	// 	fmt.Println("[ERROR] Reading Meta-data")
+	// }
 	tikaDocument := &elasticApi.Document{
 		Body:        docBody,
-		ContentType: docContent,
-		MetaData:    docMeta,
+		ContentType: "", //docContent,
+		// MetaData:    "", //docMeta,
+		FileName: fileName,
 	}
+	defer func() {
+		fmt.Printf("Tika Processed: %s \n", fileName)
+	}()
 	//Send the document on the channel
 	ch <- tikaDocument
 }
 
 func IndexData(s *indexService, ch <-chan *elasticApi.Document, index int) {
 	defer wg.Done()
+	var fileName string
 	for tikaDocument := range ch {
+		fileName = tikaDocument.FileName
 		docString, err := utils.JsonStruct(tikaDocument)
 		if err != nil {
 			fmt.Println("[ERROR] Converting to JSON string")
@@ -83,7 +90,12 @@ func IndexData(s *indexService, ch <-chan *elasticApi.Document, index int) {
 			fmt.Println("[ERROR] Sending the request to elasticsearch")
 		}
 		defer res.Body.Close()
+		break
+
 	}
+	defer func() {
+		fmt.Printf("Elastic Indexed: %s \n", fileName)
+	}()
 }
 
 //This is the method that loads all the documents to elastic search
@@ -98,14 +110,11 @@ func (s *indexService) IndexDoc(dir string) error {
 	//TODO: Tune according to performence
 	docChannel := make(chan *elasticApi.Document, 10)
 	for i, fileName := range files {
-		go ReadData(s, dir+fileName, docChannel)
+		go ReadData(s, dir+fileName, fileName, docChannel)
 		go IndexData(s, docChannel, i)
 	}
-
-	//Close the channel after completion to avoid leaks
-	go func() {
-		wg.Wait()
-		close(docChannel)
-	}()
+	//TODO:Understand the deadlock condition better
+	wg.Wait()
+	close(docChannel)
 	return nil
 }

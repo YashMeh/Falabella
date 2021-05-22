@@ -15,7 +15,8 @@ func JsonStruct(doc *elasticApi.Document) (string, error) {
 	docStruct := &elasticApi.Document{
 		Body:        doc.Body,
 		ContentType: doc.ContentType,
-		MetaData:    doc.MetaData,
+		// MetaData:    doc.MetaData,
+		FileName: doc.FileName,
 	}
 
 	// Marshal the struct to JSON and check for errors
