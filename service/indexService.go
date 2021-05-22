@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +10,8 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/google/go-tika/tika"
+	log "github.com/sirupsen/logrus"
+	"github.com/yashmeh/doc-rank/config"
 	"github.com/yashmeh/doc-rank/elasticApi"
 	"github.com/yashmeh/doc-rank/tikaApi"
 	"github.com/yashmeh/doc-rank/utils"
@@ -22,7 +23,7 @@ var (
 )
 
 type IndexService interface {
-	IndexDoc(dir string) error
+	IndexDoc(c *config.Config) error
 }
 
 type indexService struct {
@@ -36,32 +37,42 @@ func NewIndexService(elasticC elasticApi.ElasticServer, tikaC tikaApi.TikaServer
 
 func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *elasticApi.Document) {
 	//Open the file
-	f, err := os.Open(fileDir)
+	f1, err := os.Open(fileDir)
 	if err != nil {
-		fmt.Println("[ERROR] Opening file")
+		log.Error("[ERROR] Opening file")
 	}
-	defer f.Close()
+	f2, err := os.Open(fileDir)
+	if err != nil {
+		log.Error("[ERROR] Opening file")
+	}
+	f3, err := os.Open(fileDir)
+	if err != nil {
+		log.Error("[ERROR] Opening file")
+	}
+	defer f1.Close()
+	defer f2.Close()
+	defer f3.Close()
 	c := context.Background()
-	docBody, err := s.TClient.Parse(c, f)
+	docBody, err := s.TClient.Parse(c, f1)
 	if err != nil {
-		fmt.Println("[ERROR] Reading body")
+		log.Error("[ERROR] Reading body")
 	}
-	// docContent, err := s.TClient.Detect(c, f)
-	// if err != nil {
-	// 	fmt.Println("[ERROR] Reading MIMETYPE")
-	// }
-	// docMeta, err := s.TClient.Meta(c, f)
-	// if err != nil {
-	// 	fmt.Println("[ERROR] Reading Meta-data")
-	// }
+	docContent, err := s.TClient.Detect(c, f2)
+	if err != nil {
+		log.Error("[ERROR] Reading MIMETYPE")
+	}
+	docMeta, err := s.TClient.Meta(c, f3)
+	if err != nil {
+		log.Error("[ERROR] Reading Meta-data")
+	}
 	tikaDocument := &elasticApi.Document{
 		Body:        docBody,
-		ContentType: "", //docContent,
-		// MetaData:    "", //docMeta,
-		FileName: fileName,
+		ContentType: docContent,
+		MetaData:    docMeta,
+		FileName:    fileName,
 	}
 	defer func() {
-		fmt.Printf("Tika Processed: %s \n", fileName)
+		log.Infof("Tika Processed: %s \n", fileName)
 	}()
 	//Send the document on the channel
 	ch <- tikaDocument
@@ -70,11 +81,12 @@ func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *elast
 func IndexData(s *indexService, ch <-chan *elasticApi.Document, index int) {
 	defer wg.Done()
 	var fileName string
+	var statusCode int
 	for tikaDocument := range ch {
 		fileName = tikaDocument.FileName
 		docString, err := utils.JsonStruct(tikaDocument)
 		if err != nil {
-			fmt.Println("[ERROR] Converting to JSON string")
+			log.Error("[ERROR] Converting to JSON string")
 		}
 		// Instantiate a request object
 		req := esapi.IndexRequest{
@@ -86,20 +98,28 @@ func IndexData(s *indexService, ch <-chan *elasticApi.Document, index int) {
 
 		// Return an API response object from request
 		res, err := req.Do(context.Background(), s.EClient)
+		statusCode = res.StatusCode
+
 		if err != nil {
-			fmt.Println("[ERROR] Sending the request to elasticsearch")
+			log.Error("[ERROR] Sending the request to elasticsearch")
 		}
 		defer res.Body.Close()
 		break
 
 	}
 	defer func() {
-		fmt.Printf("Elastic Indexed: %s \n", fileName)
+		if statusCode == 200 {
+			log.Infof("Elastic Indexed: %s \n", fileName)
+		} else {
+			log.Errorf("[ERROR] Elastic Indexed: %s \n", fileName)
+		}
 	}()
 }
 
 //This is the method that loads all the documents to elastic search
-func (s *indexService) IndexDoc(dir string) error {
+func (s *indexService) IndexDoc(c *config.Config) error {
+	config := c.Get()
+	dir := config.GetString("appConfig.filePath")
 	//Get all the files for the directory
 	files, err := utils.IOReadDir(dir)
 	if err != nil {

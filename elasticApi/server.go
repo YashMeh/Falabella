@@ -2,6 +2,7 @@ package elasticApi
 
 import (
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/yashmeh/doc-rank/config"
 )
 
 type ElasticServer interface {
@@ -12,7 +13,9 @@ type elasticServer struct {
 	Client *elasticsearch.Client
 }
 
-func NewElasticClient(url string) (ElasticServer, error) {
+func NewElasticClient(c *config.Config) (ElasticServer, error) {
+	config := c.Get()
+	url := config.GetString("services.elasticSearch")
 	cfg := elasticsearch.Config{
 		Addresses: []string{
 			url,

@@ -1,22 +1,23 @@
 package main
 
 import (
-	"fmt"
-
+	log "github.com/sirupsen/logrus"
+	"github.com/yashmeh/doc-rank/config"
 	"github.com/yashmeh/doc-rank/elasticApi"
 	"github.com/yashmeh/doc-rank/service"
 	"github.com/yashmeh/doc-rank/tikaApi"
 )
 
 func main() {
-	aE, err := elasticApi.NewElasticClient("http://localhost:9200")
+	c := config.NewConfig()
+	aE, err := elasticApi.NewElasticClient(c)
 	if err != nil {
-		fmt.Println("[ERROR] Connecting to elasticsearch")
+		log.Error("[ERROR] Connecting to elasticsearch")
 	}
-	aT := tikaApi.NewTikaClient("http://localhost:9998")
+	aT := tikaApi.NewTikaClient(c)
 
 	sI := service.NewIndexService(aE, aT)
-	sI.IndexDoc("./assets/")
+	sI.IndexDoc(c)
 
 	// select {
 	// case j := <-service.Flag:

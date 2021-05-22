@@ -1,0 +1,8 @@
+services:
+  elasticSearch: http://localhost:9200
+  apacheTika: http://localhost:9998
+
+# Path for which you want to index the documents
+appConfig:
+  filePath: ./assets/
+  

@@ -2,9 +2,9 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/yashmeh/doc-rank/elasticApi"
 )
 
@@ -15,14 +15,14 @@ func JsonStruct(doc *elasticApi.Document) (string, error) {
 	docStruct := &elasticApi.Document{
 		Body:        doc.Body,
 		ContentType: doc.ContentType,
-		// MetaData:    doc.MetaData,
-		FileName: doc.FileName,
+		MetaData:    doc.MetaData,
+		FileName:    doc.FileName,
 	}
 
 	// Marshal the struct to JSON and check for errors
 	b, err := json.Marshal(docStruct)
 	if err != nil {
-		fmt.Println("json.Marshal ERROR:", err)
+		log.Error("json.Marshal ERROR:", err)
 		return "", err
 	}
 	return string(b), nil
