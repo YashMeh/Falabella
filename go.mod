@@ -1,4 +1,4 @@
-module github.com/yashmeh/doc-rank
+module github.com/yashmeh/Falabella
 
 go 1.15
 

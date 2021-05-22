@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/yashmeh/doc-rank/indexer"
+	"github.com/yashmeh/Falabella/indexer"
 )
 
 // A function for marshaling structs to JSON string

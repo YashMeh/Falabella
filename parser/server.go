@@ -2,7 +2,7 @@ package parser
 
 import (
 	"github.com/google/go-tika/tika"
-	"github.com/yashmeh/doc-rank/config"
+	"github.com/yashmeh/Falabella/config"
 )
 
 type TikaServer interface {

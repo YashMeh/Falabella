@@ -2,7 +2,7 @@ package indexer
 
 import (
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/yashmeh/doc-rank/config"
+	"github.com/yashmeh/Falabella/config"
 )
 
 type ElasticServer interface {

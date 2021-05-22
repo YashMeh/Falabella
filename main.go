@@ -2,10 +2,10 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/yashmeh/doc-rank/config"
-	"github.com/yashmeh/doc-rank/indexer"
-	"github.com/yashmeh/doc-rank/parser"
-	"github.com/yashmeh/doc-rank/service"
+	"github.com/yashmeh/Falabella/config"
+	"github.com/yashmeh/Falabella/indexer"
+	"github.com/yashmeh/Falabella/parser"
+	"github.com/yashmeh/Falabella/service"
 )
 
 func main() {

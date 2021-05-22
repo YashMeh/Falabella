@@ -11,10 +11,10 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/google/go-tika/tika"
 	log "github.com/sirupsen/logrus"
-	"github.com/yashmeh/doc-rank/config"
-	"github.com/yashmeh/doc-rank/indexer"
-	"github.com/yashmeh/doc-rank/parser"
-	"github.com/yashmeh/doc-rank/utils"
+	"github.com/yashmeh/Falabella/config"
+	"github.com/yashmeh/Falabella/indexer"
+	"github.com/yashmeh/Falabella/parser"
+	"github.com/yashmeh/Falabella/utils"
 )
 
 var (
