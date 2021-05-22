@@ -12,8 +12,8 @@ import (
 	"github.com/google/go-tika/tika"
 	log "github.com/sirupsen/logrus"
 	"github.com/yashmeh/doc-rank/config"
-	"github.com/yashmeh/doc-rank/elasticApi"
-	"github.com/yashmeh/doc-rank/tikaApi"
+	"github.com/yashmeh/doc-rank/indexer"
+	"github.com/yashmeh/doc-rank/parser"
 	"github.com/yashmeh/doc-rank/utils"
 )
 
@@ -31,11 +31,11 @@ type indexService struct {
 	TClient *tika.Client
 }
 
-func NewIndexService(elasticC elasticApi.ElasticServer, tikaC tikaApi.TikaServer) IndexService {
+func NewIndexService(elasticC indexer.ElasticServer, tikaC parser.TikaServer) IndexService {
 	return &indexService{EClient: elasticC.Get(), TClient: tikaC.Get()}
 }
 
-func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *elasticApi.Document) {
+func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *indexer.Document) {
 	//Open the file
 	f1, err := os.Open(fileDir)
 	if err != nil {
@@ -65,7 +65,7 @@ func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *elast
 	if err != nil {
 		log.Error("[ERROR] Reading Meta-data")
 	}
-	tikaDocument := &elasticApi.Document{
+	tikaDocument := &indexer.Document{
 		Body:        docBody,
 		ContentType: docContent,
 		MetaData:    docMeta,
@@ -78,7 +78,7 @@ func ReadData(s *indexService, fileDir string, fileName string, ch chan<- *elast
 	ch <- tikaDocument
 }
 
-func IndexData(s *indexService, ch <-chan *elasticApi.Document, index int) {
+func IndexData(s *indexService, ch <-chan *indexer.Document, index int) {
 	defer wg.Done()
 	var fileName string
 	var statusCode int
@@ -128,7 +128,7 @@ func (s *indexService) IndexDoc(c *config.Config) error {
 	wg.Add(len(files))
 	//Create a buffered channel
 	//TODO: Tune according to performence
-	docChannel := make(chan *elasticApi.Document, 10)
+	docChannel := make(chan *indexer.Document, 10)
 	for i, fileName := range files {
 		go ReadData(s, dir+fileName, fileName, docChannel)
 		go IndexData(s, docChannel, i)

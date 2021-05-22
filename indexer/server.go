@@ -1,4 +1,4 @@
-package elasticApi
+package indexer
 
 import (
 	"github.com/elastic/go-elasticsearch/v7"

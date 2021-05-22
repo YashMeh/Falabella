@@ -1,4 +1,4 @@
-package elasticApi
+package indexer
 
 type Document struct {
 	Body        string

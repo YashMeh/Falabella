@@ -5,14 +5,14 @@ import (
 	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/yashmeh/doc-rank/elasticApi"
+	"github.com/yashmeh/doc-rank/indexer"
 )
 
 // A function for marshaling structs to JSON string
-func JsonStruct(doc *elasticApi.Document) (string, error) {
+func JsonStruct(doc *indexer.Document) (string, error) {
 
 	// Create struct instance of the Elasticsearch fields struct object
-	docStruct := &elasticApi.Document{
+	docStruct := &indexer.Document{
 		Body:        doc.Body,
 		ContentType: doc.ContentType,
 		MetaData:    doc.MetaData,

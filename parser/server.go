@@ -1,4 +1,4 @@
-package tikaApi
+package parser
 
 import (
 	"github.com/google/go-tika/tika"
