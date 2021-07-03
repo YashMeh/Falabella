@@ -9,9 +9,9 @@ type Config struct {
 	config *viper.Viper
 }
 
-func NewConfig() *Config {
+func NewConfig(path string) *Config {
 	c := new(Config)
-	c.config = readConfig()
+	c.config = readConfig(path)
 	return c
 }
 
@@ -22,11 +22,11 @@ func (c *Config) Get() *viper.Viper {
 	return c.config
 }
 
-func readConfig() *viper.Viper {
+func readConfig(path string) *viper.Viper {
 	log.Info("reading environment variables")
 	v := viper.New()
 	v.SetConfigName("config")
-	v.AddConfigPath(".")
+	v.AddConfigPath(path)
 	v.SetConfigType("yaml")
 	err := v.ReadInConfig()
 	if err != nil {

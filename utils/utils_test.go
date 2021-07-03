@@ -31,7 +31,7 @@ func TestDir(t *testing.T) {
 	if err != nil {
 		t.Errorf("[ERROR]:Error reading files from directory")
 	}
-	want := []string{"test_file.go"}
+	want := []string{"test.txt", "test_file.go"}
 	if got[0] != want[0] {
 		t.Errorf("got %q , want %q", got, want)
 	}
