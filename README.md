@@ -65,6 +65,7 @@ If you want to read how elasticsearch rank documents you can read [here](https:/
 
 1. Add OCR service for dealing with text containing images.
 2. Add a service to deal with audio/video files.
+3. <del>Add tests </del>.
 
 ### Yash Mehrotra
 
