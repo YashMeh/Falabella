@@ -51,6 +51,8 @@ docker run -p 9998:9998 apache/tika:1.26
 - Ranking huge number of research papers based on a certain keyword.
 - Seaching for keywords through different kinds of documents and all at once.
   and more..
+- Rank resume based on certain skills that you want.
+- Use this to find relevant information of a keyword from heterogeneous media types.
 
 ### Architecture
 
